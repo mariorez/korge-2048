@@ -1,0 +1,14 @@
+## Gradle
+.gradle
+gradle-app.setting
+build/
+
+## IntelliJ, Android Studio:
+.idea/
+*.ipr
+*.iws
+*.iml
+out/
+
+## OS Specific
+.DS_Store
