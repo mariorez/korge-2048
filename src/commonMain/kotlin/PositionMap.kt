@@ -15,8 +15,20 @@ class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
         array[x, y] = value
     }
 
+    fun copy() = PositionMap(array.copy(data = array.data.copyOf()))
+
     fun forEach(action: (Int) -> Unit) {
         array.forEach(action)
+    }
+
+    fun getNotEmptyPositionFrom(direction: Direction, line: Int): Position? {
+        when (direction) {
+            Direction.LEFT -> for (i in 0..3) getOrNull(i, line)?.let { return it }
+            Direction.RIGHT -> for (i in 3 downTo 0) getOrNull(i, line)?.let { return it }
+            Direction.TOP -> for (i in 0..3) getOrNull(line, i)?.let { return it }
+            Direction.BOTTOM -> for (i in 3 downTo 0) getOrNull(line, i)?.let { return it }
+        }
+        return null
     }
 
     fun getRandomFreePosition(): Position? {
@@ -44,9 +56,9 @@ class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
 
     private fun hasAdjacentEqualPosition(x: Int, y: Int) = getNumber(x, y).let {
         it == getNumber(x - 1, y) ||
-        it == getNumber(x + 1, y) ||
-        it == getNumber(x, y - 1) ||
-        it == getNumber(x, y + 1)
+                it == getNumber(x + 1, y) ||
+                it == getNumber(x, y - 1) ||
+                it == getNumber(x, y + 1)
     }
 
     override fun equals(other: Any?): Boolean {
