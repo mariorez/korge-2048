@@ -35,6 +35,20 @@ class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
         return null
     }
 
+    fun hasAvailableMoves(): Boolean {
+        array.each { x, y, _ ->
+            if (hasAdjacentEqualPosition(x, y)) return true
+        }
+        return false
+    }
+
+    private fun hasAdjacentEqualPosition(x: Int, y: Int) = getNumber(x, y).let {
+        it == getNumber(x - 1, y) ||
+        it == getNumber(x + 1, y) ||
+        it == getNumber(x, y - 1) ||
+        it == getNumber(x, y + 1)
+    }
+
     override fun equals(other: Any?): Boolean {
         return (other is PositionMap) && this.array.data.contentEquals(other.array.data)
     }

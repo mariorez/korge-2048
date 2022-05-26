@@ -1,12 +1,9 @@
-import Number.ONE
-import Number.ZERO
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.input.keys
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onSwipe
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.alignRightToLeftOf
 import com.soywiz.korge.view.alignRightToRightOf
 import com.soywiz.korge.view.alignTopToBottomOf
@@ -28,7 +25,6 @@ import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Rectangle
 import kotlin.properties.Delegates
-import kotlin.random.Random
 
 var cellSize: Double = 0.0
 var fieldSize: Double = 0.0
@@ -39,6 +35,9 @@ var font: BitmapFont by Delegates.notNull()
 var map = PositionMap()
 val blocks = mutableMapOf<Int, Block>()
 var freeId = 0
+
+var isAnimationRunning = false
+var isGameOver = false
 
 suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
 
@@ -120,6 +119,9 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         }
         alignTopToBottomOf(bgBest, 5)
         alignRightToRightOf(bgField)
+        onClick {
+            this@Korge.restart()
+        }
     }
 
     val undoBlock = container {
@@ -155,29 +157,4 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
             SwipeDirection.BOTTOM -> moveBlocksTo(Direction.BOTTOM)
         }
     }
-}
-
-fun columnX(number: Int) = leftIndent + 10 + (cellSize + 10) * number
-
-fun rowY(number: Int) = topIndent + 10 + (cellSize + 10) * number
-
-fun Container.createNewBlockWithId(id: Int, number: Number, position: Position) {
-    blocks[id] = block(number).position(columnX(position.x), rowY(position.y))
-}
-
-fun Container.createNewBlock(number: Number, position: Position): Int {
-    val id = freeId++
-    createNewBlockWithId(id, number, position)
-    return id
-}
-
-fun Container.generateBlock() {
-    val position = map.getRandomFreePosition() ?: return
-    val number = if (Random.nextDouble() < 0.9) ZERO else ONE
-    val newId = createNewBlock(number, position)
-    map[position.x, position.y] = newId
-}
-
-fun Stage.moveBlocksTo(direction: Direction) {
-    println(direction)
 }
