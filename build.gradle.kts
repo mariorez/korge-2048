@@ -17,8 +17,8 @@ buildscript {
 apply<KorgeGradlePlugin>()
 
 korge {
-    id = "mariorez.puzzle2048"
-    name = "Puzzle 2048"
+    id = "com.example.puzzle2048"
+    name = "2048"
 // To enable all targets at once
 
     //targetAll()
