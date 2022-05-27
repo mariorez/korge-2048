@@ -4,6 +4,7 @@ import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onSwipe
+import com.soywiz.korge.service.storage.storage
 import com.soywiz.korge.view.alignRightToLeftOf
 import com.soywiz.korge.view.alignRightToRightOf
 import com.soywiz.korge.view.alignTopToBottomOf
@@ -22,6 +23,7 @@ import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Rectangle
 import kotlin.properties.Delegates
@@ -39,6 +41,9 @@ var freeId = 0
 var isAnimationRunning = false
 var isGameOver = false
 
+val score = ObservableProperty(0)
+val best = ObservableProperty(0)
+
 suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
 
     /* ASSETS ********************************************/
@@ -52,6 +57,19 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
     leftIndent = (views.virtualWidth - fieldSize) / 2
     topIndent = 150.0
 
+    /* SCORE *********************************************/
+    val storage = views.storage
+    best.update(storage.getOrNull("best")?.toInt() ?: 0)
+
+    score.observe {
+        if (it > best.value) best.update(it)
+    }
+
+    best.observe {
+        storage["best"] = it.toString()
+    }
+
+    /* LAYOUT ********************************************/
     val bgField = roundRect(fieldSize, fieldSize, 5.0, fill = Colors["#b9aea0"]) {
         position(leftIndent, topIndent)
     }
@@ -83,11 +101,14 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         alignTopToTopOf(bgBest, 5.0)
     }
 
-    text("0", cellSize * 0.5, Colors.WHITE, font) {
+    text(best.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
         setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
         alignment = TextAlignment.MIDDLE_CENTER
         alignTopToTopOf(bgBest, 12.0)
         centerXOn(bgBest)
+        best.observe {
+            text = it.toString()
+        }
     }
 
     /* CURRENT SCORE *************************************/
@@ -101,11 +122,14 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         alignTopToTopOf(bgScore, 5.0)
     }
 
-    text("0", cellSize * 0.5, Colors.WHITE, font) {
+    text(score.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
         setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
         alignment = TextAlignment.MIDDLE_CENTER
         centerXOn(bgScore)
         alignTopToTopOf(bgScore, 12.0)
+        score.observe {
+            text = it.toString()
+        }
     }
 
     /* BUTTONS *******************************************/
@@ -134,7 +158,7 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         alignRightToLeftOf(restartBlock, 5.0)
     }
 
-    /* GAME RULE *****************************************/
+    /* GAME CONTROL *****************************************/
     generateBlock()
 
     keys {

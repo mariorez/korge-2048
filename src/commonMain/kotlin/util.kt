@@ -70,6 +70,9 @@ fun Stage.moveBlocksTo(direction: Direction) {
             map = newMap
             generateBlock()
             isAnimationRunning = false
+
+            val points = merges.sumOf { numberFor(it.first).value }
+            score.update(score.value + points)
         }
     }
 }
@@ -212,5 +215,6 @@ fun Container.restart() {
     map = PositionMap()
     blocks.values.forEach { it.removeFromParent() }
     blocks.clear()
+    score.update(0)
     generateBlock()
 }
