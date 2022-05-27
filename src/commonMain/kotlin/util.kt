@@ -36,11 +36,12 @@ fun Container.createNewBlock(number: Number, position: Position): Int {
     return id
 }
 
-fun Container.generateBlock() {
+fun Container.generateBlockAndSave() {
     val position = map.getRandomFreePosition() ?: return
     val number = if (Random.nextDouble() < 0.9) Number.ZERO else Number.ONE
     val newId = createNewBlock(number, position)
     map[position.x, position.y] = newId
+    history.add(map.toNumberIds(), score.value)
 }
 
 fun deleteBlock(blockId: Int) = blocks.remove(blockId)!!.removeFromParent()
@@ -68,7 +69,7 @@ fun Stage.moveBlocksTo(direction: Direction) {
         showAnimation(moves, merges) {
             // when animation ends
             map = newMap
-            generateBlock()
+            generateBlockAndSave()
             isAnimationRunning = false
 
             val points = merges.sumOf { numberFor(it.first).value }
@@ -216,5 +217,24 @@ fun Container.restart() {
     blocks.values.forEach { it.removeFromParent() }
     blocks.clear()
     score.update(0)
-    generateBlock()
+    history.clear()
+    generateBlockAndSave()
+}
+
+fun Container.restoreField(history: History.Element) {
+    map.forEach { if (it != -1) deleteBlock(it) }
+    map = PositionMap()
+    score.update(history.score)
+    freeId = 0
+    val numbers = history.numberIds.map {
+        if (it >= 0 && it < Number.values().size)
+            Number.values()[it]
+        else null
+    }
+    numbers.forEachIndexed { i, number ->
+        if (number != null) {
+            val newId = createNewBlock(number, Position(i % 4, i / 4))
+            map[i % 4, i / 4] = newId
+        }
+    }
 }

@@ -37,6 +37,7 @@ var font: BitmapFont by Delegates.notNull()
 var map = PositionMap()
 val blocks = mutableMapOf<Int, Block>()
 var freeId = 0
+var history: History by Delegates.notNull()
 
 var isAnimationRunning = false
 var isGameOver = false
@@ -60,6 +61,9 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
     /* SCORE *********************************************/
     val storage = views.storage
     best.update(storage.getOrNull("best")?.toInt() ?: 0)
+    history = History(storage.getOrNull("history")) {
+        storage["history"] = it.toString()
+    }
 
     score.observe {
         if (it > best.value) best.update(it)
@@ -156,10 +160,17 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         }
         alignTopToTopOf(restartBlock)
         alignRightToLeftOf(restartBlock, 5.0)
+        onClick {
+            this@Korge.restoreField(history.undo())
+        }
     }
 
     /* GAME CONTROL *****************************************/
-    generateBlock()
+    if (history.isEmpty()) {
+        generateBlockAndSave()
+    } else {
+        restoreField(history.currentElement)
+    }
 
     keys {
         down {
